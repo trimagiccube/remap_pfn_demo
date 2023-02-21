@@ -5,6 +5,7 @@
 #include <linux/uaccess.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
+#include <asm/io.h>
 
 #define BUF_SIZE (32*PAGE_SIZE)
 
