@@ -1,7 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-	obj-m := remap_pfn_kmalloc.o
-	obj-m += remap_pfn_vmalloc.o
-	obj-m += remap_pfn_alloc_pages.o
+	include $(src)/Kbuild
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 default:
