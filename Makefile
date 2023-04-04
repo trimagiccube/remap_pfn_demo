@@ -1,11 +1,10 @@
-ifneq ($(KERNELRELEASE),)
-	include $(src)/Kbuild
-else
-	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-default:
-#	$(MAKE) -C $(KERNELDIR) ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- M=$(PWD) modules
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+all: modules
 
-clean:
-	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions
-endif
+alloc_pages		= alloc_pages/remap_pfn_alloc_pages.ko
+pfn_kmalloc		= pfn_kmalloc/remap_pfn_kmalloc.ko
+pfn_vmalloc		= pfn_vmalloc/remap_pfn_vmalloc.ko
+
+.PHONY: modules alloc_pages pfn_kmalloc pfn_vmalloc
+
+alloc_pages:
+	$(MAKE) -C alloc_pages/
