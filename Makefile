@@ -24,3 +24,27 @@ alloc_pages:
 # when remove @, shell will show echo "start build alloc_pages"
 	@echo "start build alloc_pages"
 	$(MAKE) -C alloc_pages/
+
+pfn_kmalloc:
+	@echo "start build pfn_kmalloc"
+	$(MAKE) -C pfn_kmalloc/
+
+pfn_vmalloc:
+	@echo "start build pfn_vmalloc"
+	$(MAKE) -C pfn_vmalloc/
+#########################################################
+# clean
+#########################################################
+.PHONY: clean alloc_pages.clean pfn_kmalloc.clean pfn_vmalloc.clean
+
+clean: alloc_pages.clean pfn_kmalloc.clean pfn_vmalloc.clean
+	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions *.mod
+
+alloc_pages.clean:
+	$(MAKE) -C alloc_pages/ clean;
+
+pfn_kmalloc.clean:
+	$(MAKE) -C pfn_kmalloc/ clean;
+
+pfn_vmalloc.clean:
+	$(MAKE) -C pfn_vmalloc/ clean;
