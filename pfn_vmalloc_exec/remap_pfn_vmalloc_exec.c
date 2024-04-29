@@ -82,7 +82,7 @@ unsigned int test_call(unsigned int arg)
 {
 	if(arg > 256) {
 		return 2;
-	} else if(arg < 256) {
+	} else if(arg <= 256) {
 		return 1;
 	} else {
 		return 0;
@@ -125,16 +125,44 @@ static int pulse_logger_init(void)
 	static void* buffer;
 	printk(KERN_INFO "test_call returns: %d %d %d\n", test_call(0), test_call(256), test_call(512));
 	myset_memory_x = lookup_name("set_memory_x");
-	buffer = vmalloc(0x60);
-	myset_memory_x((long)buffer, 1);
+	pr_info("myset_memory_x 0x%llx\n", myset_memory_x);
+	buffer = vmalloc(4096);
+	pr_info("buffer of vmalloc 0x%llx\n", buffer);
 	if(buffer != NULL){
-		buffer = (void*) ALIGN((uint32_t)buffer, 4) + 4;
-		printk(KERN_INFO "\t  buffer(%#10X)\n", (unsigned int)buffer);
-		printk(KERN_INFO "\t  test_call(%#10X)\n", (unsigned int)test_call);
-		memcpy(buffer, test_call, 0x4c);
+//		buffer = (void*) ALIGN((uint32_t)buffer, 4) + 4;
+		printk(KERN_INFO "\t  buffer(0x%llx)\n", (unsigned long)buffer);
+		printk(KERN_INFO "\t  test_call(0x%llx)\n", (unsigned long)test_call);
+		/* why size is 26 objdump -S pfn_vmalloc_exec.ko see it is 26
+		 * different platform should use differnet size, change it
+unsigned int test_call(unsigned int arg)
+{
+   0:	e8 00 00 00 00       	callq  5 <test_call+0x5>
+   5:	55                   	push   %rbp
+	if(arg > 256) {
+		return 2;
+	} else if(arg <= 256) {
+		return 1;
+   6:	31 c0                	xor    %eax,%eax
+   8:	81 ff 00 01 00 00    	cmp    $0x100,%edi
+   e:	0f 97 c0             	seta   %al
+{
+  11:	48 89 e5             	mov    %rsp,%rbp
+		return 1;
+  14:	83 c0 01             	add    $0x1,%eax
+	} else {
+		return 0;
+	}
+}
+  17:	5d                   	pop    %rbp
+  18:	c3                   	retq   
+  19:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+		 *
+		 */
+		memcpy(buffer, test_call, 26);
+		myset_memory_x((long)buffer, 1);
 		printk(KERN_INFO "\t  test_call copied to buffer\n");
 		test = (unsigned int (*)(unsigned int)) buffer;
-		printk(KERN_INFO "\t  test pointer assigned (%#10X)\n", test);
+		printk(KERN_INFO "\t  test pointer assigned (%llx)\n", test);
 		printk(KERN_INFO "test returns: %d %d %d\n", test(0), test(256), test(512));
 		vfree(buffer);
 	}
