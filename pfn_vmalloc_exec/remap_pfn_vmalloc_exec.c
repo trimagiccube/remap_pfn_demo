@@ -1,10 +1,12 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/miscdevice.h>
+#include <linux/kprobes.h>
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h>
 #include <linux/vmalloc.h>
+#include <asm/set_memory.h>
 
 #define BUF_SIZE (32*PAGE_SIZE)
 
@@ -87,24 +89,55 @@ unsigned int test_call(unsigned int arg)
 	}
 }
 
+#if 1
+static unsigned long (*my_kallsyms_lookup_name)(const char *name);
+unsigned long lookup_name(const char *name)
+{
+	struct kprobe kp = {
+		.symbol_name = "kallsyms_lookup_name"
+	};
+	unsigned long retval;
+	int ret;
+
+	ret = register_kprobe(&kp);
+	if (ret < 0) {
+		pr_err("register error, ret %d\n", ret);
+		return 0;
+	}
+	my_kallsyms_lookup_name = (unsigned long) kp.addr;
+	unregister_kprobe(&kp);
+
+	retval = my_kallsyms_lookup_name(name);
+	return retval;
+}
+#else
+unsigned long lookup_name(const char *name)
+{
+	return kallsyms_lookup_name(name);
+}
+#endif
+
 unsigned int test_call(unsigned int arg);
 static int pulse_logger_init(void)
 {
 	unsigned int (*test)(unsigned int arg);
+	int (*myset_memory_x)(unsigned long addr, int numpages);
 	static void* buffer;
-	printk(KERN_INFO "%s\n", __func__);
-
-	printk(KERN_INFO "test_call retuns: %d %d %d\n", test_call(0), test_call(256), test_call(512));
-
-	buffer = (void *)__get_free_pages(GFP_KERNEL, THREAD_SIZE_ORDER);
-	buffer = (void*) ALIGN((uint32_t)buffer, 4);
-	printk(KERN_INFO "\t  buffer(%#10X)\n", (unsigned int)buffer);
-	printk(KERN_INFO "\t  test_call(%#10X)\n", (unsigned int)test_call);
-	memcpy(buffer, test_call, 0x4c);
-	test = (unsigned int (*)(unsigned int)) buffer;
-	printk(KERN_INFO "test_call retuns: %d %d %d\n", test_call(0), test(256), test(512));
-	__free_pages(buffer, THREAD_SIZE_ORDER);
-
+	printk(KERN_INFO "test_call returns: %d %d %d\n", test_call(0), test_call(256), test_call(512));
+	myset_memory_x = lookup_name("set_memory_x");
+	buffer = vmalloc(0x60);
+	myset_memory_x((long)buffer, 1);
+	if(buffer != NULL){
+		buffer = (void*) ALIGN((uint32_t)buffer, 4) + 4;
+		printk(KERN_INFO "\t  buffer(%#10X)\n", (unsigned int)buffer);
+		printk(KERN_INFO "\t  test_call(%#10X)\n", (unsigned int)test_call);
+		memcpy(buffer, test_call, 0x4c);
+		printk(KERN_INFO "\t  test_call copied to buffer\n");
+		test = (unsigned int (*)(unsigned int)) buffer;
+		printk(KERN_INFO "\t  test pointer assigned (%#10X)\n", test);
+		printk(KERN_INFO "test returns: %d %d %d\n", test(0), test(256), test(512));
+		vfree(buffer);
+	}
 	return 0;
 }
 
@@ -124,6 +157,8 @@ static int __init remap_pfn_init(void)
 		goto err;
 	}
 
+	pulse_logger_init();
+	pr_info("insmod okay\n");
 	return 0;
 
 err:
