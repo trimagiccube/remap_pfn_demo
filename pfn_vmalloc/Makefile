@@ -1,4 +1,6 @@
 ifneq ($(KERNELRELEASE),)
+$(info aa$(CURDIR))
+include $(src)/pfn_vmalloc.Kbuild
 # when you type in make , it will enter linux kernel (MAKE -C);
 # and new version of kernel Kbuild system will read Kbuild file in $(src) ;
 # but if build system of kernel is old ,it will read this Makefile, and you include
@@ -9,11 +11,11 @@ ifneq ($(KERNELRELEASE),)
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 
-default:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD)
+modules:
+	$(MAKE) -C $(KERNELDIR) M=$(CURDIR)
 
 clean:
-	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions
+	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions *.mod
 
 endif
 

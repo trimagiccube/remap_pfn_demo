@@ -6,3 +6,7 @@
 中写入字符串，user_4读取字符串。user_5将整个128KB映射到自己的用户空间，然后将缓冲区清零。
     此外，在驱动中申请缓冲区的方式有多种，可以用kmalloc、也可以用alloc_pages，当然也可用vmalloc，下面会分别针对这三个接口实
 现驱动。
+
+how to build
+in top dir :
+make alloc_pages

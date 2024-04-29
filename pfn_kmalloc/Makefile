@@ -1,4 +1,5 @@
 ifneq ($(KERNELRELEASE),)
+include $(src)/pfn_kmalloc.Kbuild
 # when you type in make , it will enter linux kernel (MAKE -C);
 # and new version of kernel Kbuild system will read Kbuild file in $(src) ;
 # but if build system of kernel is old ,it will read this Makefile, and you include
@@ -13,7 +14,7 @@ default:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD)
 
 clean:
-	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions
+	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions *.mod
 
 endif
 
