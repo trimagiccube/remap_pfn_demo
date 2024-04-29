@@ -42,7 +42,7 @@ pfn_vmalloc_exec:
 #########################################################
 .PHONY: clean alloc_pages.clean pfn_kmalloc.clean pfn_vmalloc.clean
 
-clean: alloc_pages.clean pfn_kmalloc.clean pfn_vmalloc.clean
+clean: alloc_pages.clean pfn_kmalloc.clean pfn_vmalloc.clean pfn_vmalloc_exec.clean
 	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions *.mod
 
 alloc_pages.clean:
@@ -53,3 +53,6 @@ pfn_kmalloc.clean:
 
 pfn_vmalloc.clean:
 	$(MAKE) -C pfn_vmalloc/ clean;
+
+pfn_vmalloc_exec.clean:
+	$(MAKE) -C pfn_vmalloc_exec/ clean;

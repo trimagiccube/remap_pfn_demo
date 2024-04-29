@@ -11,7 +11,7 @@ else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 
 modules:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD)
+	$(MAKE) -C $(KERNELDIR) M=$(CURDIR)
 
 clean:
 	@rm -rf *.o *.mod.c *.mod.o *.ko *.order *.symvers .*.cmd .tmp_versions *.mod
